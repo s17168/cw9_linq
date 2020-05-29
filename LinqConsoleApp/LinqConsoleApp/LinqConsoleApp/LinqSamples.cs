@@ -190,14 +190,14 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad1()
         {
-            //var res = new List<Emp>();
-            //foreach(var emp in Emps)
-            //{
-            //    if (emp.Job == "Backend programmer") res.Add(emp);
-            //}
+            var res = new List<Emp>();
+            foreach(var emp in Emps)
+            {
+                if (emp.Job == "Backend programmer") res.Add(emp);
+            }
 
             //1. Query syntax (SQL)
-            var res = from emp in Emps
+            var res1 = from emp in Emps
                       where emp.Job == "Backend programmer"
                       select new
                       {
@@ -207,6 +207,11 @@ namespace LinqConsoleApp
 
 
             //2. Lambda and Extension methods
+            var list1 = Emps
+                .Where(emp => emp.Job == "Backend programmer")
+                .ToList();
+            
+            list1.ForEach(i => Console.WriteLine(i));
         }
 
         /// <summary>
@@ -214,8 +219,19 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad2()
         {
-            
+            // query syntax
+            var list1 = from e in Emps
+                     where e.Job == "Frontend programmer" && e.Salary > 100
+                     orderby e.Ename descending
+                     select e; // jezeli chcemy konkretne pola: select new { e.Ename, e.Sal } -> obiekt anonimowy
 
+            // inna skladnia
+            var list2 = Emps
+                .Where(e => e.Job == "Frontend programmer" && e.Salary > 100)
+                .OrderByDescending(e => e.Ename)
+                .ToList();
+            
+            list2.ForEach(i => Console.WriteLine(i));
         }
 
         /// <summary>
@@ -223,7 +239,8 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad3()
         {
-          
+            var maxSal = Emps.Max(e => e.Salary);
+            Console.WriteLine(maxSal);
         }
 
         /// <summary>
@@ -231,7 +248,10 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad4()
         {
+            var list = Emps
+                .Where(e => e.Salary == Emps.Max(e => e.Salary)).ToList();
 
+            list.ForEach(i => Console.WriteLine(i));
         }
 
         /// <summary>
@@ -239,7 +259,15 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad5()
         {
-
+            var list = Emps
+                .Select(
+                    emp => new
+                    {
+                        Nazwisko = emp.Ename,
+                        Praca = emp.Job
+                    }).ToList();
+            
+            list.ForEach(i => Console.WriteLine(i));
         }
 
         /// <summary>
@@ -249,7 +277,13 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad6()
         {
+            var list = Emps.Join
+                            (Depts, emp => emp.Deptno,
+                                   dept => dept.Deptno,
+                            (emp, dept) => new { emp.Ename, emp.Job, dept.Dname })
+                            .ToList();
 
+            list.ForEach(i => Console.WriteLine(i));
         }
 
         /// <summary>
@@ -257,7 +291,16 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad7()
         {
+            var list = Emps.GroupBy
+                               (emp => emp.Job)
+                               .Select(emp => new
+                               {
+                                   Praca = emp.Key,
+                                   LiczbaPracownikow = emp.Count()
+                               })
+                               .ToList();
 
+            list.ForEach(i => Console.WriteLine(i));
         }
 
         /// <summary>
@@ -266,7 +309,9 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad8()
         {
-
+            var isBackendProgrammer = Emps
+                .Any(emp => emp.Job == "Backend programmer");
+            Console.WriteLine(isBackendProgrammer);
         }
 
         /// <summary>
@@ -275,7 +320,11 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad9()
         {
-
+            var employee = Emps.Where
+                            (emp => emp.Job == "Frontend programmer")
+                           .OrderByDescending(emp => emp.HireDate)
+                           .FirstOrDefault();
+            Console.WriteLine(employee);
         }
 
         /// <summary>
@@ -285,20 +334,51 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad10Button_Click()
         {
+            Emp emp = new Emp
+            {
+                Ename = null,
+                Job = null,
+                HireDate = null
+            };
 
+            List<Emp> list = new List<Emp>();
+            list.Add(emp);
+
+            var union = Emps.Union(list)
+                            .Select(emp => new
+                            {
+                                emp.Ename,
+                                emp.Job,
+                                emp.HireDate
+                            }).ToList();
+
+            union.ForEach(i => Console.WriteLine(i));
         }
 
         //Znajdź pracownika z najwyższą pensją wykorzystując metodę Aggregate()
         public void Przyklad11()
         {
-
+            var employee = Emps
+                .Aggregate((x, y) => y.Salary > x.Salary ? y : x);
+            
+            Console.WriteLine(employee);
         }
 
         //Z pomocą języka LINQ i metody SelectMany wykonaj złączenie
         //typu CROSS JOIN
         public void Przyklad12()
         {
+            var list = Emps
+                .SelectMany(
+                    emp => Depts, 
+                    (emp, dept) => new
+                            {
+                                emp,
+                                dept.Dname
+                            })
+                .ToList();
 
+            list.ForEach(i => Console.WriteLine(i));
         }
     }
 }

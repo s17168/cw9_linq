@@ -16,6 +16,7 @@ namespace LinqConsoleApp
 
         public override string ToString()
         {
+            //return Ename + " (" + Empno + ") job = " + Job + " , salary=" + Salary + ", " + HireDate;
             return Ename + " (" + Empno + ")";
         }
     }
